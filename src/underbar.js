@@ -174,12 +174,21 @@
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
     if(accumulator === undefined) {
-      accumulator = collection[0];
-      var copy = collection.slice(1);
+      if(Array.isArray(collection)) {
+        accumulator = collection[0];
+        var copy = collection.slice(1);       
+      } else {
+        accumulator = collection.keys()[0]
+        delete collection[collection.keys()[0]];
+      }
     } else {
-      var copy = collection.slice();
+        if(Array.isArray(collection)) {
+          var copy = collection.slice();        
+        } else {
+          var copy = Object.assign({}, collection);
+        }
+
     }
-    
     _.each(copy, function(value) {
       accumulator = iterator(accumulator, value);  
     })
@@ -202,6 +211,9 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    return _.reduce(collection, function(accumulator, value) {
+      return iterator(value) && accumulator;
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
