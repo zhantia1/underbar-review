@@ -204,22 +204,36 @@
         return true;
       }
       return item === target;
+
     }, false);
   };
 
-
   // Determine whether all of the elements match a truth test.
-  _.every = function(collection, iterator) {
+  _.every = function(collection, iterator = _.identity) {
     // TIP: Try re-using reduce() here.
+    // debugger;
+    // var allElementsPass = true;
+    // _.reduce(collection, function(accumulator, value) {
+    //   if(!iterator(value)) {
+    //     allElementsPass = false;
+    //     return false;
+    //   }
+    //   return true;
+    // }, true);
+    // return allElementsPass;
     return _.reduce(collection, function(accumulator, value) {
-      return iterator(value) && accumulator;
-    }, true);
+      return iterator(value) && accumulator ? true : false;
+    }, true)
+    
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
-  _.some = function(collection, iterator) {
+  _.some = function(collection, iterator = _.identity) {
     // TIP: There's a very clever way to re-use every() here.
+    return !_.every(collection, function(value) {
+      return !iterator(value);
+    })
   };
 
 
@@ -242,11 +256,25 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    for(var i = 1; i < arguments.length; i++) {
+      for(var key in arguments[i]) {
+        obj[key] = arguments[i][key];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    for(var i = 1; i < arguments.length; i++) {
+      for(var key in arguments[i]) {
+        if(obj[key] === undefined) {
+          obj[key] = arguments[i][key];
+        }
+      }
+    }
+    return obj;
   };
 
 
@@ -290,6 +318,20 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var uniqueArguments = {};
+
+    return function() {
+      var argumentsVar = JSON.stringify(arguments);
+      
+      if(uniqueArguments.hasOwnProperty(argumentsVar)) {
+        return uniqueArguments[argumentsVar];
+      } else {
+        var result = func.apply(this, arguments);
+        uniqueArguments[argumentsVar] = result;
+        return result;
+      }      
+    }
+    
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -297,8 +339,19 @@
   //
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
-  // call someFunction('a', 'b') after 500ms
+  // call someFunction('a', 'b') after 500ms [someFunction, 500, a, b]
+  // [a, b]
+  // someFunction();
   _.delay = function(func, wait) {
+
+    var args = [];
+    for(var i = 2; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    
+    setTimeout(function() {
+      func.apply(this, args);
+    }, wait);
   };
 
 
